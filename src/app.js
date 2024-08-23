@@ -18,7 +18,7 @@ app.use(express.json({ limit: "16kb" })); //limited the json file size
 app.use(
   express.urlencoded({
     extended: true,
-    limit: "16kb",
+    limit: "72kb",
   })
 );
 app.use(express.static("public"));

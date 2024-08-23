@@ -10,7 +10,7 @@ cloudinary.config({
 const uploadOnCloudinary = async (localFilePath) => {
   try {
     if (!localFilePath) {
-      console.log("Error :: File not found at the specified path. ");
+      console.log(" Error :: File not found at the specified path. ");
       return null;
     }
 
@@ -18,12 +18,12 @@ const uploadOnCloudinary = async (localFilePath) => {
       resource_type: "auto",
     });
 
-    console.log("file is uploaded on cloudinary ", response.url);
 
     fs.unlinkSync(localFilePath); //deleting file locally
 
     return response;
   } catch (error) {
+    console.error(" Error uploading to Cloudinary ::", error);
     fs.unlinkSync(localFilePath);
     return null;
   }
