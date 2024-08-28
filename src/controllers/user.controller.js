@@ -9,16 +9,16 @@ import mongoose from "mongoose";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
-    const acessToken = user.generateAcessToken();
+    const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
-
+    
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false }); //no validation before saving
     return { accessToken, refreshToken };
   } catch (error) {
     throw new ApiError(
       500,
-      "Something went wrong while generating refresh and access token"
+      "generateAccessAndRefreshToken :: Something went wrong while generating refresh and access token"
     );
   }
 };
@@ -39,7 +39,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (
     [fullName, email, username, password].some((field) => field?.trim() === "")
   ) {
-    throw new ApiError(400, "All fields are required");
+    throw new ApiError(400, "registerUser :: All fields are required");
   }
 
   const existedUser = await User.findOne({
@@ -47,7 +47,7 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (existedUser) {
-    throw new ApiError(409, "User with email or username already exists");
+    throw new ApiError(409, "registerUser :: User with email or username already exists");
   }
 
   const avatarLocalPath = req.files?.avatar[0]?.path;
@@ -65,14 +65,14 @@ const registerUser = asyncHandler(async (req, res) => {
   const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
 
   if (!avatarLocalPath) {
-    throw new ApiError(400, "Avatar file is required");
+    throw new ApiError(400, "registerUser :: Avatar file is required");
   }
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   if (!avatar) {
-    throw new ApiError(400, "Avatar file is required");
+    throw new ApiError(400, "registerUser :: Avatar file is required");
   }
 
   const user = await User.create({
@@ -89,12 +89,12 @@ const registerUser = asyncHandler(async (req, res) => {
   );
 
   if (!createdUser) {
-    throw new ApiError(500, "Something went wrong while registering the user");
+    throw new ApiError(500, "registerUser :: Something went wrong while registering the user");
   }
 
   return res
     .status(201)
-    .json(new ApiResponse(200, createdUser, "User registered Successfully"));
+    .json(new ApiResponse(200, createdUser, "registerUser :: User registered Successfully"));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -102,25 +102,25 @@ const loginUser = asyncHandler(async (req, res) => {
   // get email or username
   //find the user : Check if user is exist.
   //password check : Check user crendtails are correct.
-  //access and referesh token
+  //access and refresh token
   //send cookie
 
   const { email, username, password } = req.body;
   if (!(username || email)) {
-    throw new ApiError(400, "username or email is required");
+    throw new ApiError(400, "loginUser :: username or email is required");
   }
 
   const user = await User.findOne({
     $or: [{ username }, { email }],
   });
   if (!user) {
-    throw new ApiError(404, "User does not exist");
+    throw new ApiError(404, "loginUser :: User does not exist");
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
 
   if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid User Credentials");
+    throw new ApiError(401, "loginUser :: Invalid User Credentials");
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
